@@ -43,12 +43,9 @@ public class JDBC {
     }
 
     // Ejercicio 1
-    public void consultaAlumnos() {
-        String query = "select * from alumnos";
-     
-        try {
-            Statement stmt = this.conexion.createStatement();
-            ResultSet rs = stmt.executeQuery(query);
+    public void consultaAlumnos(String nombre) {
+        String query = "select * from alumnos WHERE nombre LIKE '%" + nombre + "%'";
+        try (Statement stmt = this.conexion.createStatement(); ResultSet rs = stmt.executeQuery(query);) {
             int cont = 0;
             while (rs.next()) {
                 System.out.printf("%-2d\t%-10s\t%-10s\t%-4d\t%-4d\n", rs.getInt("codigo"), rs.getString("nombre"),
@@ -56,7 +53,6 @@ public class JDBC {
                 cont++;
             }
             stmt.close();
-            cerrarConexion();
             System.out.println("Número de resultados: " + cont);
         } catch (SQLException e) {
             System.out.println("Se ha producido un error: " + e.getLocalizedMessage());
@@ -65,8 +61,7 @@ public class JDBC {
 
     // Ejercicio 2
     public void altaAlumno(int codigo, String nombre, String apellidos, int altura, int aula) {
-        try {
-            Statement sta = this.conexion.createStatement();
+        try (Statement sta = this.conexion.createStatement()) {
             int filasAfectadas = sta.executeUpdate(String.format("INSERT INTO alumnos VALUES(%d, '%s', '%s', %d, %d)",
                     codigo, nombre, apellidos, altura, aula));
             System.out.println("Filas insertadas: " + filasAfectadas);
@@ -77,10 +72,9 @@ public class JDBC {
     }
 
     public void altaAsignatura(int codigo, String nombre) {
-        try {
-            Statement sta = this.conexion.createStatement();
-            int filasAfectadas = sta.executeUpdate(String.format("INSERT INTO asignaturas VALUES(%d, '%s')",
-                    codigo, nombre));
+        try (Statement sta = this.conexion.createStatement()) {
+            int filasAfectadas = sta
+                    .executeUpdate(String.format("INSERT INTO asignaturas VALUES(%d, '%s')", codigo, nombre));
             System.out.println("Filas insertadas: " + filasAfectadas);
             sta.close();
         } catch (SQLException e) {
@@ -88,19 +82,59 @@ public class JDBC {
         }
     }
 
-    //Ejercicio 3
+    // Ejercicio 3
     public void bajaAlumno(int codigo) {
-        try {
-            Statement sta = this.conexion.createStatement();
-            int filasAfectadas = sta.executeUpdate(String.format("INSERT INTO alumnos VALUES(%d, '%s', '%s', %d, %d)",
-                    codigo));
-            System.out.println("Filas insertadas: " + filasAfectadas);
+        try (Statement sta = this.conexion.createStatement()) {
+            int filasAfectadas = sta.executeUpdate("DELETE FROM alumnos WHERE codigo = " + codigo);
+            System.out.println("Filas afectadas: " + filasAfectadas);
             sta.close();
         } catch (SQLException e) {
             System.out.println("Se ha producido un error: " + e.getLocalizedMessage());
         }
     }
 
+    public void bajaAsignatura(int codigo) {
+        try (Statement sta = this.conexion.createStatement()) {
+            int filasAfectadas = sta.executeUpdate("DELETE FROM asignaturas WHERE cod = " + codigo);
+            System.out.println("Filas afectadas: " + filasAfectadas);
+            sta.close();
+        } catch (SQLException e) {
+            System.out.println("Se ha producido un error: " + e.getLocalizedMessage());
+        }
+    }
 
+    // Ejercicio 4
+      public void aulaConAlumnos() {
+        String query = "SELECT * FROM aulas JOIN alumnos";
+        try (Statement stmt = this.conexion.createStatement(); ResultSet rs = stmt.executeQuery(query);) {
+            int cont = 0;
+            while (rs.next()) {
+                System.out.printf("%-2d\t%-10s\t%-2d,\t%-2d\t%-10s\t%-10s\t%-2d\t%-2d", rs.getInt("numero"),
+                        rs.getString("nombreAula"), rs.getInt("puestos"), rs.getInt("codigo"), rs.getString("nombre"),
+                        rs.getString("apellidos"), rs.getInt("altura"), rs.getInt("aula"));
+                cont++;
+            }
+            stmt.close();
+            System.out.println("Número de resultados: " + cont);
+        } catch (SQLException e) {
+            System.out.println("Se ha producido un error: " + e.getLocalizedMessage());
+        }
+    }
+
+    public void asignaturasSinAlumnos() {
+        String query = "SELECT nombre FROM asignaturas ";
+        try (Statement stmt = this.conexion.createStatement(); ResultSet rs = stmt.executeQuery(query);) {
+            int cont = 0;
+            System.out.println("Nombre de las asignaturas:");
+            while (rs.next()) {
+                System.out.printf("%-10s\n", rs.getString("nombre"));
+                cont++;
+            }
+            stmt.close();
+            System.out.println("Número de resultados: " + cont);
+        } catch (SQLException e) {
+            System.out.println("Se ha producido un error: " + e.getLocalizedMessage());
+        }
+    }
 
 }
